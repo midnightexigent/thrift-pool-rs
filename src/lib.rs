@@ -183,8 +183,8 @@ impl<
         MWT: MakeWriteTransport<Channel = WriteHalf<TTcpChannel>> + Send + Sync + 'static,
         MOP: MakeOutputProtocol<Transport = MWT::Output> + Send + Sync + 'static,
         T: FromIoProtocol<InputProtocol = MIP::Output, OutputProtocol = MOP::Output>
-            + HasBroken<S>
-            + IsValid<S>
+            + HasBroken
+            + IsValid
             + Send
             + Sync
             + 'static,
@@ -199,14 +199,14 @@ impl<
     }
 
     fn has_broken(&self, conn: &mut Self::Connection) -> bool {
-        conn.has_broken(&self.addr)
+        conn.has_broken()
     }
 
     async fn is_valid(
         &self,
         conn: &mut bb8::PooledConnection<'_, Self>,
     ) -> Result<(), Self::Error> {
-        conn.is_valid(&self.addr)
+        conn.is_valid()
     }
 }
 
