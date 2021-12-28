@@ -10,10 +10,13 @@ use std::{
     net::ToSocketAddrs,
 };
 use thrift::{
-    protocol::{TBinaryInputProtocol, TBinaryOutputProtocol, TInputProtocol, TOutputProtocol},
+    protocol::{
+        TBinaryInputProtocol, TBinaryOutputProtocol, TCompactInputProtocol, TCompactOutputProtocol,
+        TInputProtocol, TOutputProtocol,
+    },
     transport::{
-        ReadHalf, TBufferedReadTransport, TBufferedWriteTransport, TIoChannel, TReadTransport,
-        TTcpChannel, TWriteTransport, WriteHalf,
+        ReadHalf, TBufferedReadTransport, TBufferedWriteTransport, TFramedReadTransport,
+        TFramedWriteTransport, TIoChannel, TReadTransport, TTcpChannel, TWriteTransport, WriteHalf,
     },
 };
 
@@ -26,6 +29,39 @@ pub trait MakeReadTransport {
     type Channel: Read;
     type Output: TReadTransport;
     fn make_read_transport(&self, channel: Self::Channel) -> Self::Output;
+}
+
+pub struct MakeFramedTransport<T>(PhantomData<T>);
+
+impl<T> MakeFramedTransport<T> {
+    pub fn new() -> Self {
+        Self(PhantomData)
+    }
+}
+
+impl<T> Default for MakeFramedTransport<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl<T: Read> MakeReadTransport for MakeFramedTransport<T> {
+    type Channel = T;
+
+    type Output = TFramedReadTransport<T>;
+
+    fn make_read_transport(&self, channel: Self::Channel) -> Self::Output {
+        TFramedReadTransport::new(channel)
+    }
+}
+impl<T: Write> MakeWriteTransport for MakeFramedTransport<T> {
+    type Channel = T;
+
+    type Output = TFramedWriteTransport<T>;
+
+    fn make_write_transport(&self, channel: Self::Channel) -> Self::Output {
+        TFramedWriteTransport::new(channel)
+    }
 }
 
 pub struct MakeBufferedTransport<T>(PhantomData<T>);
@@ -72,6 +108,36 @@ pub trait MakeOutputProtocol {
     fn make_output_protocol(&self, transport: Self::Transport) -> Self::Output;
 }
 
+pub struct MakeCompactProtocol<T>(PhantomData<T>);
+impl<T> MakeCompactProtocol<T> {
+    pub fn new() -> Self {
+        Self(PhantomData)
+    }
+}
+
+impl<T> Default for MakeCompactProtocol<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+impl<T: TReadTransport> MakeInputProtocol for MakeCompactProtocol<T> {
+    type Transport = T;
+
+    type Output = TCompactInputProtocol<T>;
+
+    fn make_input_protocol(&self, transport: Self::Transport) -> Self::Output {
+        TCompactInputProtocol::new(transport)
+    }
+}
+impl<T: TWriteTransport> MakeOutputProtocol for MakeCompactProtocol<T> {
+    type Transport = T;
+
+    type Output = TCompactOutputProtocol<T>;
+
+    fn make_output_protocol(&self, transport: Self::Transport) -> Self::Output {
+        TCompactOutputProtocol::new(transport)
+    }
+}
 pub struct MakeBinaryProtocol<T> {
     strict: bool,
     _phantom: PhantomData<T>,
