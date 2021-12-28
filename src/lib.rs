@@ -1,3 +1,9 @@
+#[cfg(feature = "enable-bb8")]
+pub use bb8;
+
+#[cfg(feature = "enable-r2d2")]
+pub use r2d2;
+
 use std::{
     io::{Read, Write},
     marker::PhantomData,
