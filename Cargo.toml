@@ -3,7 +3,7 @@ name = "thrift-pool"
 version = "0.1.4"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/midnightexigent/thrift-pool-rs"
-description = "Easily turn any thrift client into a connection pool with r2d2 or bb8"
+description = "Easily turn any thrift client into a connection pool compatible with r2d2 and bb8"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
