@@ -18,6 +18,7 @@ use thrift::{
         ReadHalf, TBufferedReadTransport, TBufferedWriteTransport, TFramedReadTransport,
         TFramedWriteTransport, TIoChannel, TReadTransport, TTcpChannel, TWriteTransport, WriteHalf,
     },
+    TThriftClient,
 };
 
 pub trait MakeWriteTransport {
@@ -193,6 +194,11 @@ pub trait HasBroken {
     fn has_broken(&mut self) -> bool;
 }
 
+pub trait ThriftConnection<Ip: TInputProtocol, Op: TOutputProtocol>: TThriftClient {
+    fn is_valid(&mut self) -> Result<(), thrift::Error>;
+    fn has_broken(&mut self) -> bool;
+    fn from_io_protocol(input_protocol: Ip, output_protocol: Op) -> Self;
+}
 pub struct ThriftConnectionManager<T, S: ToSocketAddrs, MIP, MOP, MRT, MWT> {
     addr: S,
     mk_i_prt: MIP,
@@ -215,16 +221,22 @@ impl<T, S: ToSocketAddrs, MIP, MOP, MRT, MWT> ThriftConnectionManager<T, S, MIP,
     }
 }
 
+#[cfg(feature = "enable-bb8")]
+#[async_trait::async_trait]
 impl<
-        S: ToSocketAddrs + Clone,
-        MRT: MakeReadTransport<Channel = ReadHalf<TTcpChannel>>,
-        MIP: MakeInputProtocol<Transport = MRT::Output>,
-        MWT: MakeWriteTransport<Channel = WriteHalf<TTcpChannel>>,
-        MOP: MakeOutputProtocol<Transport = MWT::Output>,
-        T: FromIoProtocol<InputProtocol = MIP::Output, OutputProtocol = MOP::Output>,
-    > ThriftConnectionManager<T, S, MIP, MOP, MRT, MWT>
+        S: ToSocketAddrs + Clone + Send + Sync + 'static,
+        MRT: MakeReadTransport<Channel = ReadHalf<TTcpChannel>> + Send + Sync + 'static,
+        MIP: MakeInputProtocol<Transport = MRT::Output> + Send + Sync + 'static,
+        MWT: MakeWriteTransport<Channel = WriteHalf<TTcpChannel>> + Send + Sync + 'static,
+        MOP: MakeOutputProtocol<Transport = MWT::Output> + Send + Sync + 'static,
+        T: ThriftConnection<MIP::Output, MOP::Output> + Send + Sync + 'static,
+    > bb8::ManageConnection for ThriftConnectionManager<T, S, MIP, MOP, MRT, MWT>
 {
-    pub fn create_connection(&self) -> Result<T, thrift::Error> {
+    type Connection = T;
+
+    type Error = thrift::Error;
+
+    async fn connect(&self) -> Result<Self::Connection, Self::Error> {
         let mut channel = TTcpChannel::new();
         channel.open(self.addr.clone())?;
 
@@ -237,31 +249,6 @@ impl<
         let output_protocol = self.mk_o_prt.make_output_protocol(write_transport);
 
         Ok(T::from_io_protocol(input_protocol, output_protocol))
-    }
-}
-
-#[cfg(feature = "enable-bb8")]
-#[async_trait::async_trait]
-impl<
-        S: ToSocketAddrs + Clone + Send + Sync + 'static,
-        MRT: MakeReadTransport<Channel = ReadHalf<TTcpChannel>> + Send + Sync + 'static,
-        MIP: MakeInputProtocol<Transport = MRT::Output> + Send + Sync + 'static,
-        MWT: MakeWriteTransport<Channel = WriteHalf<TTcpChannel>> + Send + Sync + 'static,
-        MOP: MakeOutputProtocol<Transport = MWT::Output> + Send + Sync + 'static,
-        T: FromIoProtocol<InputProtocol = MIP::Output, OutputProtocol = MOP::Output>
-            + HasBroken
-            + IsValid
-            + Send
-            + Sync
-            + 'static,
-    > bb8::ManageConnection for ThriftConnectionManager<T, S, MIP, MOP, MRT, MWT>
-{
-    type Connection = T;
-
-    type Error = thrift::Error;
-
-    async fn connect(&self) -> Result<Self::Connection, Self::Error> {
-        self.create_connection()
     }
 
     fn has_broken(&self, conn: &mut Self::Connection) -> bool {
@@ -283,12 +270,7 @@ impl<
         MIP: MakeInputProtocol<Transport = MRT::Output> + Send + Sync + 'static,
         MWT: MakeWriteTransport<Channel = WriteHalf<TTcpChannel>> + Send + Sync + 'static,
         MOP: MakeOutputProtocol<Transport = MWT::Output> + Send + Sync + 'static,
-        T: FromIoProtocol<InputProtocol = MIP::Output, OutputProtocol = MOP::Output>
-            + HasBroken
-            + IsValid
-            + Send
-            + Sync
-            + 'static,
+        T: ThriftConnection<MIP::Output, MOP::Output> + Send + Sync + 'static,
     > r2d2::ManageConnection for ThriftConnectionManager<T, S, MIP, MOP, MRT, MWT>
 {
     type Connection = T;
@@ -296,7 +278,18 @@ impl<
     type Error = thrift::Error;
 
     fn connect(&self) -> Result<Self::Connection, Self::Error> {
-        self.create_connection()
+        let mut channel = TTcpChannel::new();
+        channel.open(self.addr.clone())?;
+
+        let (read, write) = channel.split()?;
+
+        let read_transport = self.mk_r_tpt.make_read_transport(read);
+        let input_protocol = self.mk_i_prt.make_input_protocol(read_transport);
+
+        let write_transport = self.mk_w_tpt.make_write_transport(write);
+        let output_protocol = self.mk_o_prt.make_output_protocol(write_transport);
+
+        Ok(T::from_io_protocol(input_protocol, output_protocol))
     }
 
     fn has_broken(&self, conn: &mut Self::Connection) -> bool {
