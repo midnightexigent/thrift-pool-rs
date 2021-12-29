@@ -13,6 +13,6 @@ This library was extracted from [hbase-thrift](https://crates.io/crates/hbase-th
 ## Examples
 
 - See [hbase-thrift-rs](https://github.com/midnightexigent/hbase-thrift-rs)
-- See [thrift-pool-tutorial](https://github.com/midnightexigent/thrift-pool-tutorial) which showcases how to implement a connection pool around the client used in the [official tutorial](https://github.com/apache/thrift/tree/master/tutorial) (`CalculatorSyncClient`) using the capabilities of this library
+- See [thrift-pool-tutorial](https://github.com/midnightexigent/thrift-pool-tutorial-rs) which showcases how to implement a connection pool around the client used in the [official tutorial](https://github.com/apache/thrift/tree/master/tutorial) (`CalculatorSyncClient`) using the capabilities of this library
 
 
