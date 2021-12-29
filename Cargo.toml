@@ -15,7 +15,7 @@ r2d2 = { version = "0.8.9", optional = true }
 thrift = "0.15.0"
 
 [features]
-default = ["enable-r2d2"]
-enable-r2d2 = ["r2d2"]
-enable-bb8 = ["bb8", "async-trait"]
+default = ["impl-r2d2"]
+impl-r2d2 = ["r2d2"]
+impl-bb8 = ["bb8", "async-trait"]
 
