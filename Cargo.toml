@@ -1,6 +1,6 @@
 [package]
 name = "thrift-pool"
-version = "0.2.0"
+version = "1.0.0"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/midnightexigent/thrift-pool-rs"
 description = "Easily make Connection Pools compatible with r2d2 and bb8 from any Thrift Client"
