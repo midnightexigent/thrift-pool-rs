@@ -1,5 +1,5 @@
-//! This library provides a way easily to implement Connection Pools for any [`thrift::TThriftClient`],
-//! which can then be used alongside [`bb8`] and/or [`r2d2`]
+//! This library provides a simple way implement [`bb8`] and/or [`r2d2`] Connection Pools
+//! for any [`TThriftClient`](thrift::TThriftClient)
 //!
 //! <br>
 //!
@@ -112,7 +112,8 @@
 //! #      }
 //! #  });
 //!   // create a connection manager
-//!   let manager = MakeThriftConnectionFromAddrs::<Client, _>::new("localhost:9090").into_connection_manager();
+//!   let manager = MakeThriftConnectionFromAddrs::<Client, _>::new("localhost:9090")
+//!                 .into_connection_manager();
 //!   
 //!   // we're able to create bb8 and r2d2 Connection Pools
 //!   let bb8 = bb8::Pool::builder().build(manager.clone()).await?;

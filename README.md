@@ -1,14 +1,15 @@
 # Thrift Pool
 
-This library provides a way easily to implement Connection Pools for any [`thrift::TThriftClient`],
-which can then be used alongside [`bb8`] and/or [`r2d2`]
+This library provides a simple way implement [`bb8`](https://crates.io/crates/bb8) 
+and/or [`r2d2`](https://crates.io/crates/r2d2) Connection Pools
+for any [`TThriftClient`](https://docs.rs/thrift/0.15.0/thrift/trait.TThriftClient.html)
 
 ```rust
 use thrift::protocol::{TCompactInputProtocol, TCompactOutputProtocol, TInputProtocol, TOutputProtocol};
 use thrift::transport::{
     ReadHalf, TFramedReadTransport, TFramedWriteTransport, TTcpChannel, WriteHalf,
 };
-use thrift_pool::{MakeThriftConnectionFromAddrs, ThriftConnection, FromProtocol};
+use thrift_pool::{MakeThriftConnectionFromAddrs, ThriftConnectionManager, ThriftConnection, FromProtocol};
 use r2d2::Pool;
 
 struct MyThriftClient<Ip: TInputProtocol, Op: TOutputProtocol> {
@@ -47,8 +48,9 @@ type Client = MyThriftClient<
     TCompactOutputProtocol<TFramedWriteTransport<WriteHalf<TTcpChannel>>>,
 >;
 
-let manager =
-    MakeThriftConnectionFromAddrs::<Client, _>::new(remote_address).into_connection_manager();
+let manager = ThriftConnectionManager::new(
+                    MakeThriftConnectionFromAddrs::<Client, _>::new("localhost:9090")
+                );
 let pool = Pool::builder().build(manager)?;
 let mut client = pool.get()?;
 
