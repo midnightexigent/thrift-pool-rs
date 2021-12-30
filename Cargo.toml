@@ -1,10 +1,10 @@
 [package]
 name = "thrift-pool"
 version = "1.2.0"
+edition = "2021"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/midnightexigent/thrift-pool-rs"
 description = "Easily make Connection Pools compatible with r2d2 and bb8 from any Thrift Client"
-edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -21,4 +21,3 @@ impl-bb8 = ["bb8", "async-trait"]
 
 [dev-dependencies]
 tokio = { version = "1.15.0", features = ["full"] }
-
