@@ -3,17 +3,17 @@
 //!
 //! <br>
 //!
-//! ## Usage
+//! # Usage
 //!
 //! There are 2 possible use cases
 //!
-//! ### As a library
+//! ## As a library
 //!
 //! If you're implementing a library that provides a (possibly generated) thrift client,
 //! you should implement the [`ThriftConnection`] and [`FromProtocol`] traits
 //! for that client
 //!
-//! ```rust
+//! ```
 //! # use thrift::protocol::{TInputProtocol, TOutputProtocol};
 //! # use thrift_pool::{FromProtocol, ThriftConnection};
 //! #
@@ -51,14 +51,14 @@
 //!
 //! ```
 //!
-//! ### As an application
+//! ## As an application
 //!
 //! If you're implementing an application that uses a (possibly generated) thrift client that
 //! implements [`FromProtocol`] and [`ThriftConnection`] (see previous section), you can use
 //! [`r2d2`] or [`bb8`] (make sure to read their documentations) along with
 //! [`ThriftConnectionManager`] to create Connection Pools for the client
 //!
-//! ```rust should_panic
+//! ```
 //! # use thrift::protocol::{TInputProtocol, TOutputProtocol};
 //! # use thrift_pool::{FromProtocol, ThriftConnection};
 //! #
@@ -102,9 +102,15 @@
 //!     TCompactInputProtocol<TFramedReadTransport<ReadHalf<TTcpChannel>>>,
 //!     TCompactOutputProtocol<TFramedWriteTransport<WriteHalf<TTcpChannel>>>,
 //! >;
-//!
+//! # use tokio::net::TcpListener;
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! # let listener = TcpListener::bind("127.0.0.1:9090").await?;
+//! # tokio::spawn(async move {
+//! #      loop {
+//! #         listener.accept().await.unwrap();
+//! #      }
+//! #  });
 //!   // create a connection manager
 //!   let manager = MakeThriftConnectionFromAddrs::<Client, _>::new("localhost:9090").into_connection_manager();
 //!   
@@ -121,7 +127,7 @@
 //!
 //! <br>
 //!
-//! ## More examples
+//! # Examples
 //!
 //! - [hbase-thrift](https://github.com/midnightexigent/hbase-thrift-rs) -- the project from which this
 //! library was extracted. implements Connection Pools for the client generated from the
