@@ -132,7 +132,7 @@
 //!
 //! - [hbase-thrift](https://github.com/midnightexigent/hbase-thrift-rs) -- the project from which this
 //! library was extracted. implements Connection Pools for the client generated from the
-//! [HBase Thrift Spec](https://github.com/apache/hbase/tree/master/hbase-thrift/src/main/resources/org/apache/hadoop/hbase/thrift)
+//! [`HBase` Thrift Spec](https://github.com/apache/hbase/tree/master/hbase-thrift/src/main/resources/org/apache/hadoop/hbase/thrift)
 //! - [thrift-pool-tutorial](https://github.com/midnightexigent/thrift-pool-tutorial-rs) -- implements
 //! Connection Pools for the client used in the official
 //! [thrift tutorial](https://github.com/apache/thrift/tree/master/tutorial)
@@ -252,11 +252,17 @@ pub trait FromProtocol {
 /// Used by [`ThriftConnectionManager`] to implement parts of
 /// [`bb8::ManageConnection`] and/or [`r2d2::ManageConnection`]
 pub trait ThriftConnection {
-    /// See [r2d2::ManageConnection::Error] and/or [bb8::ManageConnection::Error]
+    /// See [`r2d2::ManageConnection::Error`] and/or [`bb8::ManageConnection::Error`]
     type Error;
-    /// See [r2d2::ManageConnection::is_valid] and/or [bb8::ManageConnection::is_valid]
+
+    /// See [`r2d2::ManageConnection::is_valid`] and/or [`bb8::ManageConnection::is_valid`]
+    ///
+    /// # Errors
+    ///
+    /// Should return `Err` if the connection is invalid
     fn is_valid(&mut self) -> Result<(), Self::Error>;
-    /// See [r2d2::ManageConnection::has_broken] and/or [bb8::ManageConnection::has_broken]
+
+    /// See [`r2d2::ManageConnection::has_broken`] and/or [`bb8::ManageConnection::has_broken`]
     fn has_broken(&mut self) -> bool {
         false
     }
@@ -272,7 +278,13 @@ pub trait MakeThriftConnection {
     type Error;
     /// The connection type the we are trying to create
     type Output;
+
     /// Attempt to create a new connection
+    ///
+    /// # Errors
+    ///
+    /// Should return `Err` if (for any reason)
+    /// unable to create a new connection
     fn make_thrift_connection(&self) -> Result<Self::Output, Self::Error>;
 }
 
