@@ -291,14 +291,13 @@ pub trait MakeThriftConnection {
 /// A [`MakeThriftConnection`] that attempts to create new connections
 /// from a [`ToSocketAddrs`] and a [`FromProtocol`]
 ///
-/// The connection is accordance with the
+/// The connection is created in accordance with the
 /// [thrift rust tutorial](https://github.com/apache/thrift/tree/master/tutorial):
 ///
-/// * Open a [`TTcpChannel`]
-/// * Split it
-/// * Create `TReadTransport` and `TWriteTransport`
-/// * Create `TInputProtocol` and `TOutputProtocol`
-/// * Create a client with `i_prot` and `o_prot`
+/// * Open a [`TTcpChannel`] and split it
+/// * Use the created `[ReadHalf]` and `[WriteHalf]` to create [`TReadTransport`] and [`TWriteTransport`]
+/// * Use those to create [`TInputProtocol`] and [`TOutputProtocol`]
+/// * Create a new client with `i_prot` and `o_prot` -- It needs to implement [`FromProtocol`]
 ///
 /// For that to happen, `T` needs to be able
 /// to create the `Read`/`Write` `Transport`s
@@ -349,7 +348,6 @@ pub trait MakeThriftConnection {
 ///     MakeThriftConnectionFromAddrs::<Client, _>::new("localhost:9090").into_connection_manager();
 ///
 /// ```
-
 pub struct MakeThriftConnectionFromAddrs<T, S> {
     addrs: S,
     conn: PhantomData<T>,

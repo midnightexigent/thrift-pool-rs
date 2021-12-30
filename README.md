@@ -4,6 +4,14 @@ This library provides a simple way implement [`bb8`](https://crates.io/crates/bb
 and/or [`r2d2`](https://crates.io/crates/r2d2) Connection Pools
 for any [`TThriftClient`](https://docs.rs/thrift/0.15.0/thrift/trait.TThriftClient.html)
 
+<br>
+
+[Documentation](https://docs.rs/thrift-pool/1.0.2/thrift_pool/)
+
+<br>
+
+## Example
+
 ```rust
 use thrift::protocol::{TCompactInputProtocol, TCompactOutputProtocol, TInputProtocol, TOutputProtocol};
 use thrift::transport::{
@@ -55,9 +63,8 @@ let pool = Pool::builder().build(manager)?;
 let mut client = pool.get()?;
 ```
 
-[Documentation](https://docs.rs/thrift-pool/1.0.2/thrift_pool/)
 
-## Examples
+## Other examples
 
 - [hbase-thrift](https://github.com/midnightexigent/hbase-thrift-rs) -- the project from which this
   library was extracted. implements Connection Pools for the client generated from the
