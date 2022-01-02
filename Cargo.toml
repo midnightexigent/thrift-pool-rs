@@ -6,6 +6,9 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/midnightexigent/thrift-pool-rs"
 description = "Easily make Connection Pools compatible with r2d2 and bb8 from any Thrift Client"
 
+[package.metadata.docs.rs]
+all-features = true
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
