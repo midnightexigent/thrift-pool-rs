@@ -138,7 +138,7 @@
 //! [thrift tutorial](https://github.com/apache/thrift/tree/master/tutorial)
 
 use std::{
-    io::{Read, Write},
+    io::{self, Read, Write},
     marker::PhantomData,
     net::ToSocketAddrs,
 };
@@ -156,7 +156,7 @@ use thrift::{
 
 /// Create self from a [`Read`]
 pub trait FromRead: TReadTransport {
-    type Read: Read;
+    type Read: io::Read;
     fn from_read(read: Self::Read) -> Self;
 }
 
@@ -175,7 +175,7 @@ impl<R: Read> FromRead for TFramedReadTransport<R> {
 
 /// Create self from a [`Write`]
 pub trait FromWrite: TWriteTransport {
-    type Write: Write;
+    type Write: io::Write;
     fn from_write(write: Self::Write) -> Self;
 }
 
@@ -200,18 +200,18 @@ pub trait FromReadTransport: TInputProtocol {
     fn from_read_transport(r_tran: Self::ReadTransport) -> Self;
 }
 
-impl<Rt: TReadTransport> FromReadTransport for TBinaryInputProtocol<Rt> {
-    type ReadTransport = Rt;
+impl<RT: TReadTransport> FromReadTransport for TBinaryInputProtocol<RT> {
+    type ReadTransport = RT;
 
-    fn from_read_transport(r_tran: Rt) -> Self {
+    fn from_read_transport(r_tran: RT) -> Self {
         Self::new(r_tran, true)
     }
 }
 
-impl<Rt: TReadTransport> FromReadTransport for TCompactInputProtocol<Rt> {
-    type ReadTransport = Rt;
+impl<RT: TReadTransport> FromReadTransport for TCompactInputProtocol<RT> {
+    type ReadTransport = RT;
 
-    fn from_read_transport(r_tran: Rt) -> Self {
+    fn from_read_transport(r_tran: RT) -> Self {
         Self::new(r_tran)
     }
 }
@@ -222,16 +222,16 @@ pub trait FromWriteTransport: TOutputProtocol {
     fn from_write_transport(w_tran: Self::WriteTransport) -> Self;
 }
 
-impl<Wt: TWriteTransport> FromWriteTransport for TBinaryOutputProtocol<Wt> {
-    type WriteTransport = Wt;
-    fn from_write_transport(w_tran: Wt) -> Self {
+impl<WT: TWriteTransport> FromWriteTransport for TBinaryOutputProtocol<WT> {
+    type WriteTransport = WT;
+    fn from_write_transport(w_tran: WT) -> Self {
         Self::new(w_tran, true)
     }
 }
 
-impl<Wt: TWriteTransport> FromWriteTransport for TCompactOutputProtocol<Wt> {
-    type WriteTransport = Wt;
-    fn from_write_transport(w_tran: Wt) -> Self {
+impl<WT: TWriteTransport> FromWriteTransport for TCompactOutputProtocol<WT> {
+    type WriteTransport = WT;
+    fn from_write_transport(w_tran: WT) -> Self {
         Self::new(w_tran)
     }
 }
@@ -381,11 +381,11 @@ impl<T, S> MakeThriftConnectionFromAddrs<T, S> {
 
 impl<
         S: ToSocketAddrs + Clone,
-        Rt: FromRead<Read = ReadHalf<TTcpChannel>>,
-        Ip: FromReadTransport<ReadTransport = Rt>,
-        Wt: FromWrite<Write = WriteHalf<TTcpChannel>>,
-        Op: FromWriteTransport<WriteTransport = Wt>,
-        T: FromProtocol<InputProtocol = Ip, OutputProtocol = Op>,
+        RT: FromRead<Read = ReadHalf<TTcpChannel>>,
+        IP: FromReadTransport<ReadTransport = RT>,
+        WT: FromWrite<Write = WriteHalf<TTcpChannel>>,
+        OP: FromWriteTransport<WriteTransport = WT>,
+        T: FromProtocol<InputProtocol = IP, OutputProtocol = OP>,
     > MakeThriftConnectionFromAddrs<T, S>
 {
     pub fn into_connection_manager(self) -> ThriftConnectionManager<Self> {
@@ -395,11 +395,11 @@ impl<
 
 impl<
         S: ToSocketAddrs + Clone,
-        Rt: FromRead<Read = ReadHalf<TTcpChannel>>,
-        Ip: FromReadTransport<ReadTransport = Rt>,
-        Wt: FromWrite<Write = WriteHalf<TTcpChannel>>,
-        Op: FromWriteTransport<WriteTransport = Wt>,
-        T: FromProtocol<InputProtocol = Ip, OutputProtocol = Op>,
+        RT: FromRead<Read = ReadHalf<TTcpChannel>>,
+        IP: FromReadTransport<ReadTransport = RT>,
+        WT: FromWrite<Write = WriteHalf<TTcpChannel>>,
+        OP: FromWriteTransport<WriteTransport = WT>,
+        T: FromProtocol<InputProtocol = IP, OutputProtocol = OP>,
     > MakeThriftConnection for MakeThriftConnectionFromAddrs<T, S>
 {
     type Error = thrift::Error;
@@ -411,11 +411,11 @@ impl<
         channel.open(self.addrs.clone())?;
         let (read, write) = channel.split()?;
 
-        let read_transport = Rt::from_read(read);
-        let input_protocol = Ip::from_read_transport(read_transport);
+        let read_transport = RT::from_read(read);
+        let input_protocol = IP::from_read_transport(read_transport);
 
-        let write_transport = Wt::from_write(write);
-        let output_protocol = Op::from_write_transport(write_transport);
+        let write_transport = WT::from_write(write);
+        let output_protocol = OP::from_write_transport(write_transport);
 
         Ok(T::from_protocol(input_protocol, output_protocol))
     }
@@ -464,10 +464,7 @@ impl<
         conn.has_broken()
     }
 
-    async fn is_valid(
-        &self,
-        conn: &mut bb8::PooledConnection<'_, Self>,
-    ) -> Result<(), Self::Error> {
+    async fn is_valid(&self, conn: &mut Self::Connection) -> Result<(), Self::Error> {
         conn.is_valid()
     }
 }
