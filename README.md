@@ -6,10 +6,10 @@ for any [`TThriftClient`](https://docs.rs/thrift/0.15.0/thrift/trait.TThriftClie
 
 ## Documenation
 
-- This library is primarily documented on its 
-[docs.rs](https://docs.rs/thrift-pool/latest/thrift_pool/) page
+- This library is primarily documented on its
+  [docs.rs](https://docs.rs/thrift-pool/latest/thrift_pool/) page
 
-- Here is a quick example 
+- Here is a quick example
 
 ```rust
 use thrift::protocol::{TCompactInputProtocol, TCompactOutputProtocol, TInputProtocol, TOutputProtocol};
@@ -75,10 +75,9 @@ let pool = bb8::Pool::builder().build(manager).await?;
 let mut client = pool.get()?;
 ```
 
-
 ## Examples
 
-- [hbase-thrift](https://github.com/midnightexigent/hbase-thrift-rs):  the project from which this
+- [hbase-thrift](https://github.com/midnightexigent/hbase-thrift-rs): the project from which this
   library was extracted. implements Connection Pools for the client generated from the
   [HBase Thrift Spec](https://github.com/apache/hbase/tree/master/hbase-thrift/src/main/resources/org/apache/hadoop/hbase/thrift)
 - [thrift-pool-tutorial](https://github.com/midnightexigent/thrift-pool-tutorial-rs): implements
