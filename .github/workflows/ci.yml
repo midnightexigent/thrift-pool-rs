@@ -1,25 +1,43 @@
 name: CI
-
 on:
-  push:
   pull_request:
-  schedule: [cron: "40 1 * * *"]
-
+  push:
+    branches:
+      - master
+  schedule:
+    - cron: '00 01 * * *'
+    
 jobs:
+  style:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dprint/check@v2.1
+  
   clippy:
     name: Clippy
     runs-on: ubuntu-latest
-    if: github.event_name != 'pull_request'
     steps:
-      - uses: actions/checkout@v2
-      - uses: dtolnay/rust-toolchain@clippy
-      - run: cargo clippy --all-features --tests -- -Dclippy::all -Dclippy::pedantic
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: clippy, rust-src
+      - run: cargo clippy --tests -- -Dclippy::all -Dclippy::pedantic
+
+  miri:
+    name: Miri
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@miri
+      - run: cargo miri test
+        env:
+          MIRIFLAGS: -Zmiri-strict-provenance
 
   outdated:
     name: Outdated
     runs-on: ubuntu-latest
-    if: github.event_name != 'pull_request'
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: dtolnay/install@cargo-outdated
-      - run: cargo outdated --exit-code 1
+      - run: cargo outdated --workspace --exit-code 1
