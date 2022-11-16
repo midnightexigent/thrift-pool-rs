@@ -15,7 +15,7 @@ all-features = true
 async-trait = { version = "0.1.53", optional = true }
 bb8 = { version = "0.8.0", optional = true }
 r2d2 = { version = "0.8.9", optional = true }
-thrift = "0.15.0"
+thrift = "0.17.0"
 
 [features]
 default = ["impl-r2d2"]
