@@ -17,7 +17,7 @@ r2d2 = { version = "0.8.10", optional = true }
 thrift = "0.17.0"
 
 [features]
-default = ["impl-r2d2"]
+default = ["impl-r2d2", "impl-bb8"]
 impl-r2d2 = ["r2d2"]
 impl-bb8 = ["bb8"]
 
