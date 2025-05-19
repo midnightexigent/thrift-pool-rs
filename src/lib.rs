@@ -42,13 +42,12 @@
 //! impl<Ip: TInputProtocol, Op: TOutputProtocol> ThriftConnection for MyThriftClient<Ip, Op> {
 //!     type Error = thrift::Error;
 //!     fn is_valid(&mut self) -> Result<(), Self::Error> {
-//!        Ok(())
+//!         Ok(())
 //!     }
 //!     fn has_broken(&mut self) -> bool {
-//!        false
-//!    }
+//!         false
+//!     }
 //! }
-//!
 //! ```
 //!
 //! ## As an application
@@ -307,11 +306,12 @@ pub trait MakeThriftConnection {
 /// by implementing the relevant traits in the library
 ///
 /// ```
-///
-/// use thrift_pool::{MakeThriftConnectionFromAddrs, FromProtocol};
+/// use thrift_pool::{FromProtocol, MakeThriftConnectionFromAddrs};
 ///
 /// use thrift::{
-///     protocol::{TCompactInputProtocol, TCompactOutputProtocol, TInputProtocol, TOutputProtocol},
+///     protocol::{
+///         TCompactInputProtocol, TCompactOutputProtocol, TInputProtocol, TOutputProtocol,
+///     },
 ///     transport::{
 ///         ReadHalf, TFramedReadTransport, TFramedWriteTransport, TIoChannel, TReadTransport,
 ///         TTcpChannel, TWriteTransport, WriteHalf,
@@ -346,7 +346,6 @@ pub trait MakeThriftConnection {
 /// // The Protocols/Transports used in this client implement the necessary traits so we can do this
 /// let manager =
 ///     MakeThriftConnectionFromAddrs::<Client, _>::new("localhost:9090").into_connection_manager();
-///
 /// ```
 pub struct MakeThriftConnectionFromAddrs<T, S> {
     addrs: S,
@@ -380,13 +379,13 @@ impl<T, S> MakeThriftConnectionFromAddrs<T, S> {
 }
 
 impl<
-        S: ToSocketAddrs + Clone,
-        RT: FromRead<Read = ReadHalf<TTcpChannel>>,
-        IP: FromReadTransport<ReadTransport = RT>,
-        WT: FromWrite<Write = WriteHalf<TTcpChannel>>,
-        OP: FromWriteTransport<WriteTransport = WT>,
-        T: FromProtocol<InputProtocol = IP, OutputProtocol = OP>,
-    > MakeThriftConnectionFromAddrs<T, S>
+    S: ToSocketAddrs + Clone,
+    RT: FromRead<Read = ReadHalf<TTcpChannel>>,
+    IP: FromReadTransport<ReadTransport = RT>,
+    WT: FromWrite<Write = WriteHalf<TTcpChannel>>,
+    OP: FromWriteTransport<WriteTransport = WT>,
+    T: FromProtocol<InputProtocol = IP, OutputProtocol = OP>,
+> MakeThriftConnectionFromAddrs<T, S>
 {
     pub fn into_connection_manager(self) -> ThriftConnectionManager<Self> {
         ThriftConnectionManager::new(self)
@@ -394,13 +393,13 @@ impl<
 }
 
 impl<
-        S: ToSocketAddrs + Clone,
-        RT: FromRead<Read = ReadHalf<TTcpChannel>>,
-        IP: FromReadTransport<ReadTransport = RT>,
-        WT: FromWrite<Write = WriteHalf<TTcpChannel>>,
-        OP: FromWriteTransport<WriteTransport = WT>,
-        T: FromProtocol<InputProtocol = IP, OutputProtocol = OP>,
-    > MakeThriftConnection for MakeThriftConnectionFromAddrs<T, S>
+    S: ToSocketAddrs + Clone,
+    RT: FromRead<Read = ReadHalf<TTcpChannel>>,
+    IP: FromReadTransport<ReadTransport = RT>,
+    WT: FromWrite<Write = WriteHalf<TTcpChannel>>,
+    OP: FromWriteTransport<WriteTransport = WT>,
+    T: FromProtocol<InputProtocol = IP, OutputProtocol = OP>,
+> MakeThriftConnection for MakeThriftConnectionFromAddrs<T, S>
 {
     type Error = thrift::Error;
 
@@ -445,12 +444,11 @@ impl<T> ThriftConnectionManager<T> {
 }
 
 #[cfg(feature = "impl-bb8")]
-#[async_trait::async_trait]
 impl<
-        E: Send + std::fmt::Debug + 'static,
-        C: ThriftConnection<Error = E> + Send + 'static,
-        T: MakeThriftConnection<Output = C, Error = E> + Send + Sync + 'static,
-    > bb8::ManageConnection for ThriftConnectionManager<T>
+    E: Send + std::fmt::Debug + 'static,
+    C: ThriftConnection<Error = E> + Send + 'static,
+    T: MakeThriftConnection<Output = C, Error = E> + Send + Sync + 'static,
+> bb8::ManageConnection for ThriftConnectionManager<T>
 {
     type Connection = C;
 
@@ -471,10 +469,10 @@ impl<
 
 #[cfg(feature = "impl-r2d2")]
 impl<
-        E: std::error::Error + 'static,
-        C: ThriftConnection<Error = E> + Send + 'static,
-        T: MakeThriftConnection<Output = C, Error = E> + Send + Sync + 'static,
-    > r2d2::ManageConnection for ThriftConnectionManager<T>
+    E: std::error::Error + 'static,
+    C: ThriftConnection<Error = E> + Send + 'static,
+    T: MakeThriftConnection<Output = C, Error = E> + Send + Sync + 'static,
+> r2d2::ManageConnection for ThriftConnectionManager<T>
 {
     type Connection = C;
 
