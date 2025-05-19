@@ -101,6 +101,7 @@
 //!     TCompactInputProtocol<TFramedReadTransport<ReadHalf<TTcpChannel>>>,
 //!     TCompactOutputProtocol<TFramedWriteTransport<WriteHalf<TTcpChannel>>>,
 //! >;
+//!
 //! # use tokio::net::TcpListener;
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -130,11 +131,12 @@
 //! # Examples
 //!
 //! - [hbase-thrift](https://github.com/midnightexigent/hbase-thrift-rs) -- the project from which this
-//! library was extracted. implements Connection Pools for the client generated from the
-//! [`HBase` Thrift Spec](https://github.com/apache/hbase/tree/master/hbase-thrift/src/main/resources/org/apache/hadoop/hbase/thrift)
+//!   library was extracted. implements Connection Pools for the client generated from the
+//!   [`HBase` Thrift Spec](https://github.com/apache/hbase/tree/master/hbase-thrift/src/main/resources/org/apache/hadoop/hbase/thrift)
+//!
 //! - [thrift-pool-tutorial](https://github.com/midnightexigent/thrift-pool-tutorial-rs) -- implements
-//! Connection Pools for the client used in the official
-//! [thrift tutorial](https://github.com/apache/thrift/tree/master/tutorial)
+//!   Connection Pools for the client used in the official
+//!   [thrift tutorial](https://github.com/apache/thrift/tree/master/tutorial)
 
 use std::{
     io::{self, Read, Write},
